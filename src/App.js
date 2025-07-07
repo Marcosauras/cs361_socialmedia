@@ -6,6 +6,8 @@ function App() {
       <header className="App-header">
         <p>
           Getting Things Set Up for Smol Haven!
+          <br />
+          Soon this will be a social media app, thank you for your patience!
         </p>
       </header>
     </div>
