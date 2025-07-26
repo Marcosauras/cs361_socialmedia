@@ -36,9 +36,12 @@ export const GET_POSTS = gql`
   query posts {
     posts {
       _id
-      author
       content
       createdAt
+      author {
+        _id
+        username
+      }
     }
   }
 `;

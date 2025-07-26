@@ -1,15 +1,16 @@
 const { Schema, model } = require("mongoose");
 const dateFormat = require("../utils/dateFormat");
 
-const postsSchema = new Schema({
+const postSchema = new Schema({
   author: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: "User",        // ← now a reference to the User model
     required: true,
   },
   content: {
     type: String,
     required: true,
-    minlength: 10,
+    minlength: 1,
     trim: true,
   },
   createdAt: {
@@ -19,6 +20,6 @@ const postsSchema = new Schema({
   },
 });
 
-const Posts = model("Posts", postsSchema);
+const Post = model("Post", postSchema);
 
-module.exports = Posts;
+module.exports = Post;

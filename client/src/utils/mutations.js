@@ -51,12 +51,15 @@ export const DELETE_USER = gql`
 `;
 
 export const ADD_POST = gql`
-  mutation addPost($author: String!, $content: String!) {
-    addPost(author: $author, content: $content) {
+  mutation addPost($content: String!) {
+    addPost(content: $content) {
       _id
-      author
       content
       createdAt
+      author {
+        _id
+        username
+      }
     }
   }
 `;

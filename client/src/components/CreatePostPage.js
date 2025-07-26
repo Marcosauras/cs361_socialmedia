@@ -27,7 +27,7 @@ const handleSubmit = async (e) => {
     }
 
     try {
-      await addPost({ variables: { author, content } });
+      await addPost({ variables: { content } });
     } catch (err) {
       console.error("GraphQL error on addPost:", err);
       setError(true);
@@ -38,10 +38,7 @@ const handleSubmit = async (e) => {
     <div className="flex flex-col min-h-screen">
       {/* Gradient background and centered column */}
       <div
-        className="flex-grow flex flex-col items-center justify-center
-                   bg-gradient-to-br from-zomp-600 to-persian_green-500
-                   px-6 py-4"
-      >
+        className="flex-grow flex flex-col items-center justify-center bg-gradient-to-br from-zomp-600 to-persian_green-500 px-6 py-4">
         {/* Site Title */}
         <h1 className="text-5xl font-extrabold text-white mb-8 drop-shadow-lg">
           Smol Gaming Haven
@@ -74,16 +71,13 @@ const handleSubmit = async (e) => {
                 onChange={(e) => setContent(e.target.value)}
                 required
                 placeholder="What's on your mind?"
-                className="w-full h-32 px-4 py-3 bg-white/20 text-lg text-white
-                           rounded-lg focus:outline-none focus:ring-2 focus:ring-zomp-300"
-              />
+                className="w-full h-32 px-4 py-3 bg-white/20 text-lg text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-zomp-300"/>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-zomp-500 hover:bg-zomp-600 text-white
-                         font-semibold rounded-lg transition-transform hover:scale-105"
+              className="w-full py-3 bg-zomp-500 hover:bg-zomp-600 text-white font-semibold rounded-lg transition-transform hover:scale-105"
             >
               {loading ? "Posting..." : "Post"}
             </button>

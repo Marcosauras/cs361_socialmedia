@@ -3,10 +3,11 @@ const { gql } = require("apollo-server-express");
 const typeDefs = gql`
   type Post {
     _id: ID!
-    author: String!
     content: String!
     createdAt: String
+    author: User!
   }
+
 
   type User {
     _id: ID!
@@ -37,7 +38,7 @@ const typeDefs = gql`
     updateUser(username: String, email: String, img: String, password: String): Auth
     deleteUser(username: String!): Auth
 
-    addPost(author: String!, content: String!): Post
+    addPost(content: String!): Post
     updatePost(postId: ID!, content: String!): Post
     deletePost(postId: ID!): Post
   }
