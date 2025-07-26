@@ -1,0 +1,19 @@
+{
+  "name": "cs361_socialmedia",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Node.js, Express, and MongoDB REST CRUD API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --env-file=config.env server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mongodb": "^6.18.0"
+  }
+}
