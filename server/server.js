@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
 const path = require("path");
@@ -21,7 +21,7 @@ async function startApollo() {
   });
 
   await server.start();
-  server.applyMiddleware({ app });               // ← Apollo middleware goes here
+  server.applyMiddleware({ app });
 
   // Only serve React build when in production
   if (process.env.NODE_ENV === "production") {
@@ -37,7 +37,9 @@ async function startApollo() {
   db.once("open", () => {
     app.listen(PORT, () => {
       console.log(`API server running on port ${PORT}!`);
-      console.log(`GraphQL available at http://localhost:${PORT}${server.graphqlPath}`);
+      console.log(
+        `GraphQL available at http://localhost:${PORT}${server.graphqlPath}`
+      );
     });
   });
 }

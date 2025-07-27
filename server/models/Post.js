@@ -4,7 +4,7 @@ const dateFormat = require("../utils/dateFormat");
 const postSchema = new Schema({
   author: {
     type: Schema.Types.ObjectId,
-    ref: "User",        // ← now a reference to the User model
+    ref: "User",
     required: true,
   },
   content: {
@@ -18,6 +18,7 @@ const postSchema = new Schema({
     default: Date.now,
     get: (timestamp) => dateFormat(timestamp),
   },
+  images: [{ type: String }],
 });
 
 const Post = model("Post", postSchema);

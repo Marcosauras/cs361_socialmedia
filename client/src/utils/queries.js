@@ -1,5 +1,5 @@
 import { gql } from "@apollo/client";
-
+//  This query retrieves the currently logged-in user's profile
 export const GET_ME = gql`
   query Me {
     me {
@@ -7,16 +7,20 @@ export const GET_ME = gql`
       username
       email
       img
+      location
       posts {
         _id
-        author
         content
         createdAt
+        author {
+          _id
+          username
+        }
       }
     }
   }
 `;
-
+// This query retrieves a single user by their ID
 export const QUERY_USER = gql`
   query singleUser($_id: String) {
     user(_id: $_id) {
@@ -31,9 +35,9 @@ export const QUERY_USER = gql`
     }
   }
 `;
-
+// This query retrieves all users and their posts
 export const GET_POSTS = gql`
-  query posts {
+  query Posts {
     posts {
       _id
       content

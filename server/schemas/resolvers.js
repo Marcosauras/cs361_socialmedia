@@ -4,7 +4,7 @@ const { User, Post }          = require("../models");
 const { signToken }           = require("../utils/auth");
 
 const resolvers = {
-  Query: {
+Query: {
     // Fetch all users and their posts
     users: async () =>
       await User.find().populate("posts"),
@@ -28,7 +28,7 @@ const resolvers = {
   },
 
   Mutation: {
-    // Create a new user and return a token
+// Create a new user and return a token
     addUser: async (parent, { username, email, password }) => {
       let user = await User.findOne({ username });
       if (user) {
@@ -62,13 +62,14 @@ const resolvers = {
       return { token: signToken(user), user };
     },
     // Update user information
-    addPost: async (parent, { content }, context) => {
+    addPost: async (parent, { content, images }, context) => {
       if (!context.user) {
         throw new AuthenticationError("You must be logged in to post");
       }
       const post = await Post.create({
         author:  context.user._id,
         content,
+        images: images || [],
       });
       await User.findByIdAndUpdate(
         context.user._id,
@@ -77,7 +78,7 @@ const resolvers = {
       );
       return await post.populate("author");
     },
-    // Update a post
+
     updatePost: async (parent, { postId, content }, context) => {
       if (!context.user) {
         throw new AuthenticationError("You must be logged in to update a post");
@@ -92,7 +93,7 @@ const resolvers = {
       }
       return updated;
     },
-    // Delete a post
+
     deletePost: async (parent, { postId }, context) => {
       if (!context.user) {
         throw new AuthenticationError("You must be logged in to delete a post");
