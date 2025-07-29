@@ -53,6 +53,7 @@ export const GET_POSTS = gql`
       author {
         _id
         username
+        profileImg 
       }
     }
   }

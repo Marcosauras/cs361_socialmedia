@@ -9,13 +9,16 @@ const resolvers = {
     users: async () => await User.find().populate("posts"),
     user: async (parent, { _id }) => await User.findById(_id).populate("posts"),
     // Fetch the currently logged-in user
-    me: async (parent, _args, context) => {
+     me: async (parent, args, context) => {
       if (!context.user) {
         throw new AuthenticationError("Not logged in");
       }
       return await User.findById(context.user._id)
         .select("-__v -password")
-        .populate("posts");
+        .populate({
+          path: "posts",
+          populate: { path: "author", select: "username email img" }
+        });
     },
 
     posts: async () => await Post.find().populate("author"),

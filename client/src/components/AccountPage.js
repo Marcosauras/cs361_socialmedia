@@ -22,7 +22,23 @@ export default function AccountPage() {
   const [deletePost] = useMutation(DELETE_POST);
 
   if (loading) return <p className="text-center text-white">Loading…</p>;
-  if (error) return <p className="text-center text-red-500">Error!</p>;
+  if (error)
+    return (
+      <div className="p-6">
+        <h2 className="text-red-500">Error loading posts</h2>
+        <pre className="text-xs text-gray-300">
+          {JSON.stringify(
+            {
+              message: error.message,
+              graphQLErrors: error.graphQLErrors,
+              networkError: error.networkError && error.networkError.message,
+            },
+            null,
+            2
+          )}
+        </pre>
+      </div>
+    );
 
   const user = data.me;
 

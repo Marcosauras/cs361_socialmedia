@@ -12,8 +12,8 @@ export default function Homepage() {
   const sortedRef = useRef([]);
   const BATCH_SIZE = 20;
 
-  // Sort posts and set initial display
   useEffect(() => {
+    // Sort posts by createdAt descending
     if (data?.posts) {
       sortedRef.current = [...data.posts].sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -35,7 +35,6 @@ export default function Homepage() {
       setHasMore(false);
     }
   }, [displayPosts.length]);
-  // Set up intersection observer for infinite scroll
   const lastPostRef = useCallback(
     (node) => {
       if (loading) return;
@@ -54,7 +53,20 @@ export default function Homepage() {
     return <p className="text-center text-white mt-12">Loading posts…</p>;
   if (error)
     return (
-      <p className="text-center text-red-500 mt-12">Error loading posts.</p>
+      <div className="p-6">
+        <h2 className="text-red-500">Error loading posts</h2>
+        <pre className="text-xs text-gray-300">
+          {JSON.stringify(
+            {
+              message: error.message,
+              graphQLErrors: error.graphQLErrors,
+              networkError: error.networkError && error.networkError.message,
+            },
+            null,
+            2
+          )}
+        </pre>
+      </div>
     );
 
   if (!sortedRef.current.length)
