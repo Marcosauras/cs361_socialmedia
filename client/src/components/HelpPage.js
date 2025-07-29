@@ -8,17 +8,17 @@ const HelpPage = () => {
     {
       question: "Can I edit or delete my posts?",
       answer:
-        "Yes! Navigate to your Profile Settings and click 'Edit Profile'. Your new username must be unique.",
+        "Yes! Navigate to your Profile page, click on the button marked 'View My Posts' and on each post you will see two buttons called edit and delete.",
     },
     {
       question: "How do I report a bug or user?",
       answer:
-        "Click the 'Report' button on the post or user profile, or go to Support under Settings.",
+        "You can send us am email at hamimarc@oregonstate.edu with details about the issue or user you want to report. Please include as much information as possible.",
     },
     {
-      question: "What image sizes are best for profile and post uploads?",
+      question: "Are spoilers allowed?",
       answer:
-        "Profile pictures are resized to 400x400px. Post images are resized to 720x900px for consistency.",
+        "Yes game spoilers are allowed, but we ask that you start your post with the word 'Spoiler' so that users can avoid them if they wish.",
     },
   ];
 
@@ -41,6 +41,12 @@ const HelpPage = () => {
               <p className="mt-2 text-gray-200">{faq.answer}</p>
             </div>
           ))}
+        </div>
+        <div className="my-6 space-y-6">
+          <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl text-white relative">
+            <h2 className="text-xl font-semibold text-pink-700"> If your question was not answered</h2>
+            <p className="mt-2 text-gray-200"> Email us at fakeemail@email.com</p>
+          </div>
         </div>
       </div>
     </div>
