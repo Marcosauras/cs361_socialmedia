@@ -42,8 +42,8 @@ const HelpPage = () => {
             </div>
           ))}
         </div>
-        <div className="my-6 space-y-6">
-          <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl text-white relative">
+        <div className="my-12">
+          <div className="bg-white/10 border backdrop-blur-md p-6 rounded-2xl shadow-xl text-white relative">
             <h2 className="text-xl font-semibold text-pink-700"> For any more questions</h2>
             <p className="mt-2 text-gray-200"> Email us at fakeemail@email.com</p>
           </div>

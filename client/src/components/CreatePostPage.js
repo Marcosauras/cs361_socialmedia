@@ -75,38 +75,6 @@ export default function CreatePostPage() {
             className="w-full h-32 px-4 py-3 bg-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-zomp-300"
           />
 
-          {/* Image URL and the Upload Button */}
-          <div className="flex space-x-2">
-            <input
-              type="url"
-              placeholder="Paste image URL"
-              value={imageInput}
-              onChange={(e) => setImageInput(e.target.value)}
-              className="flex-grow px-3 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-zomp-300"
-            />
-            <button
-              type="button"
-              onClick={handleImageUpload}
-              disabled={uploading}
-              className="px-4 py-2 bg-persian_green-500 hover:bg-persian_green-600 text-white rounded-lg"
-            >
-              {uploading ? "Uploading…" : "Add Image"}
-            </button>
-          </div>
-
-          {/* Shows added images */}
-          {images.length > 0 && (
-            <div className="grid grid-cols-3 gap-2">
-              {images.map((url) => (
-                <img
-                  key={url}
-                  src={url}
-                  alt="preview"
-                  className="w-full h-24 object-cover rounded-md"
-                />
-              ))}
-            </div>
-          )}
 
           {/* Error message */}
           {error && (
