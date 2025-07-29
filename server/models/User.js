@@ -18,7 +18,7 @@ const userSchema = new Schema({
     required: true,
     minlength: 5,
   },
-  img: {
+  profileImg: {
     type: String,
   },
   posts: [

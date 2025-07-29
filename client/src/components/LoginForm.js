@@ -66,7 +66,8 @@ export default function LoginForm() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-white mb-1 font-medium" >
+                className="block text-white mb-1 font-medium"
+              >
                 Password
               </label>
               <input
@@ -77,19 +78,24 @@ export default function LoginForm() {
                 onChange={handleChange}
                 required
                 placeholder="••••••••"
-                className="w-full px-4 py-3 bg-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-zomp-300"/>
+                className="w-full px-4 py-3 bg-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-zomp-300"
+              />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-zomp-500 hover:bg-zomp-600 text-white font-semibold rounded-lg transition-transform hover:scale-105">
+              className="w-full py-3 bg-zomp-500 hover:bg-zomp-600 text-white font-semibold rounded-lg transition-transform hover:scale-105"
+            >
               {loading ? "Logging in..." : "Log In"}
             </button>
           </form>
 
           <p className="mt-6 text-center text-white">
             Need an account?{" "}
-            <Link to="/signup" className="text-persian_green-200 hover:underline">
+            <Link
+              to="/signup"
+              className="text-persian_green-200 hover:underline"
+            >
               Sign up
             </Link>
           </p>

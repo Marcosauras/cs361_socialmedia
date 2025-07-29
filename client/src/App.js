@@ -20,6 +20,7 @@ import AccountPage from "./components/AccountPage";
 import Navbar from "./components/Navbar";
 import CreatePostPage from "./components/CreatePostPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import HelpPage from "./components/HelpPage";
 
 const httpLink = createHttpLink({
   uri: "http://localhost:3001/graphql",
@@ -75,6 +76,15 @@ function App() {
               <ProtectedRoute>
               <Navbar />
                 <AccountPage />
+              </ProtectedRoute>
+            }
+          />
+                    <Route
+            path="/help"
+            element={
+              <ProtectedRoute>
+              <Navbar />
+                <HelpPage />
               </ProtectedRoute>
             }
           />

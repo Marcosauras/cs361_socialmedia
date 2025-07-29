@@ -1,5 +1,5 @@
-import decode from 'jwt-decode';
-const TOKEN_KEY = 'id_token';
+import decode from "jwt-decode";
+const TOKEN_KEY = "id_token";
 
 class AuthService {
   // Decode the stored token to get the user profile data
@@ -38,7 +38,7 @@ class AuthService {
   // Save token then redirect to home
   login(token) {
     localStorage.setItem(TOKEN_KEY, token);
-    window.location.assign('/');
+    window.location.assign("/");
   }
 
   // Remove token and reload page

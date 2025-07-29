@@ -4,25 +4,26 @@ import auth from "../utils/auth";
 export default function Navbar() {
   const navigate = useNavigate();
   const loggedIn = auth.loggedIn();
-// Handle logout
+  // Handle logout
   const handleLogout = () => {
     auth.logout();
     navigate("/login", { replace: true });
   };
 
-// Define your link sets
+  // Define your link sets
   const publicLinks = [
     { to: "/login", label: "Log In" },
     { to: "/signup", label: "Sign Up" },
   ];
-// Define private links that should only be shown when logged in
+  // Define private links that should only be shown when logged in
   const privateLinks = [
     { to: "/", label: "Homepage" },
     { to: "/create", label: "New Post" },
+    { to: "/help", label: "Help" },
     { to: "/account", label: "My Account" },
   ];
-// Render the navbar
-// Use the loggedIn state to determine which links to show
+  // Render the navbar
+  // Use the loggedIn state to determine which links to show
   return (
     <nav className="bg-gradient-to-r from-zomp-600 via-persian_green-500 to-kelly_green-500 text-white">
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">

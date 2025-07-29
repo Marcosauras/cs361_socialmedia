@@ -1,15 +1,13 @@
 const { AuthenticationError } = require("apollo-server-express");
-const { UserInputError }      = require("apollo-server-errors");
-const { User, Post }          = require("../models");
-const { signToken }           = require("../utils/auth");
+const { UserInputError } = require("apollo-server-errors");
+const { User, Post } = require("../models");
+const { signToken } = require("../utils/auth");
 
 const resolvers = {
-Query: {
+  Query: {
     // Fetch all users and their posts
-    users: async () =>
-      await User.find().populate("posts"),
-    user: async (parent, { _id }) =>
-      await User.findById(_id).populate("posts"),
+    users: async () => await User.find().populate("posts"),
+    user: async (parent, { _id }) => await User.findById(_id).populate("posts"),
     // Fetch the currently logged-in user
     me: async (parent, _args, context) => {
       if (!context.user) {
@@ -20,15 +18,14 @@ Query: {
         .populate("posts");
     },
 
-    posts: async () =>
-      await Post.find().populate("author"),
+    posts: async () => await Post.find().populate("author"),
 
     post: async (parent, { postId }) =>
       await Post.findById(postId).populate("author"),
   },
 
   Mutation: {
-// Create a new user and return a token
+    // Create a new user and return a token
     addUser: async (parent, { username, email, password }) => {
       let user = await User.findOne({ username });
       if (user) {
@@ -61,13 +58,14 @@ Query: {
       await User.deleteOne({ _id: user._id });
       return { token: signToken(user), user };
     },
+
     // Update user information
     addPost: async (parent, { content, images }, context) => {
       if (!context.user) {
         throw new AuthenticationError("You must be logged in to post");
       }
       const post = await Post.create({
-        author:  context.user._id,
+        author: context.user._id,
         content,
         images: images || [],
       });
@@ -78,7 +76,27 @@ Query: {
       );
       return await post.populate("author");
     },
+    updateUser: async (parent, args, context) => {
+      if (!context.user) {
+        throw new AuthenticationError(
+          "You must be logged in to update your profile."
+        );
+      }
+      const user = await User.findById(context.user._id);
+      if (!user) {
+        throw new UserInputError("User not found");
+      }
+      const { username, email, profileImg, password } = args;
+      if (username) user.username = username;
+      if (email) user.email = email;
+      if (profileImg) user.profileImg = profileImg;
+      if (password) user.password = password;
 
+      const updatedUser = await user.save();
+      const token = signToken(updatedUser);
+
+      return { token, user: updatedUser };
+    },
     updatePost: async (parent, { postId, content }, context) => {
       if (!context.user) {
         throw new AuthenticationError("You must be logged in to update a post");

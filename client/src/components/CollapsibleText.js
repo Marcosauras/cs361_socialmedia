@@ -4,9 +4,7 @@ export default function CollapsibleText({ text, charLimit = 200 }) {
   const isLong = text.length > charLimit;
   const [expanded, setExpanded] = useState(false);
 
-  const display = !isLong || expanded
-    ? text
-    : text.slice(0, charLimit) + "…";
+  const display = !isLong || expanded ? text : text.slice(0, charLimit) + "…";
 
   return (
     <div className="relative">

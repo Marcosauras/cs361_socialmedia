@@ -13,7 +13,10 @@ export default function PostList() {
       <h2>All Posts</h2>
       {data.posts.map((p) => (
         <div key={p._id} className="post-card">
-          <p><strong>{p.author}</strong> <em>{new Date(p.createdAt).toLocaleString()}</em></p>
+          <p>
+            <strong>{p.author}</strong>{" "}
+            <em>{new Date(p.createdAt).toLocaleString()}</em>
+          </p>
           <p>{p.content}</p>
         </div>
       ))}
