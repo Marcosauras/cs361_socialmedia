@@ -27,7 +27,7 @@ const HelpPage = () => {
       <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-pink-700">Help & FAQs</h1>
         <p className="mb-10 text-lg text-gray-300">
-          Welcome to PixelHaven Help. Here are some common questions users ask:
+          Welcome to Smol Gaming Haven Help. Here are some common questions users ask:
         </p>
         <div className="space-y-6">
           {faqs.map((faq, index) => (
@@ -44,7 +44,7 @@ const HelpPage = () => {
         </div>
         <div className="my-6 space-y-6">
           <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl text-white relative">
-            <h2 className="text-xl font-semibold text-pink-700"> If your question was not answered</h2>
+            <h2 className="text-xl font-semibold text-pink-700"> For any more questions</h2>
             <p className="mt-2 text-gray-200"> Email us at fakeemail@email.com</p>
           </div>
         </div>
