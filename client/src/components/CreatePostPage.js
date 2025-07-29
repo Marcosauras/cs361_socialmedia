@@ -50,7 +50,7 @@ export default function CreatePostPage() {
     }
   };
 
-  // final form submit: send content+images to GraphQL
+  // final form submit: send contentimages to GraphQL
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -59,7 +59,13 @@ export default function CreatePostPage() {
       setError(true);
     }
   };
-
+  const handleKeyDown = (e) => {
+    // if user presses Enter the post will be submitted
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow flex flex-col items-center justify-center bg-gradient-to-br from-zomp-600 to-persian_green-500 px-6 py-4">
@@ -71,10 +77,10 @@ export default function CreatePostPage() {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="What's on your mind?"
             className="w-full h-32 px-4 py-3 bg-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-zomp-300"
           />
-
 
           {/* Error message */}
           {error && (
