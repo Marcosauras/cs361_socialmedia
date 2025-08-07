@@ -1,16 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_ME } from "../utils/queries";
-import { UPDATE_POST, DELETE_POST, UPDATE_USER } from "../utils/mutations";
+import { UPDATE_POST, DELETE_POST} from "../utils/mutations";
 import Footer from "./Footer";
 
 export default function AccountPage() {
   const { loading, error, data, refetch } = useQuery(GET_ME);
-  const [updateUser] = useMutation(UPDATE_USER);
-
-  const [newAvatarUrl, setNewAvatarUrl] = useState("");
-  const [avatarError, setAvatarError] = useState("");
-  const [avatarLoading, setAvatarLoading] = useState(false);
 
   const [showPosts, setShowPosts] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -40,34 +35,6 @@ export default function AccountPage() {
 
   const user = data.me;
 
-  const handleAvatarSubmit = async (e) => {
-    e.preventDefault();
-    setAvatarError("");
-    setAvatarLoading(true);
-
-    try {
-      const res = await fetch("http://localhost:3002/api/profile-pics", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${localStorage.getItem("id_token")}`,
-        },
-        body: JSON.stringify({ userId: user._id, imageUrl: newAvatarUrl }),
-      });
-      const json = await res.json();
-      if (!json.success) throw new Error(json.message || "Upload failed");
-
-      await updateUser({ variables: { profileImg: json.url } });
-      await refetch();
-      setNewAvatarUrl("");
-    } catch (err) {
-      console.error(err);
-      setAvatarError("Could not upload avatar. Try a different URL.");
-    } finally {
-      setAvatarLoading(false);
-    }
-  };
-
   const handleEdit = (post) => {
     setEditingId(post._id);
     setEditContent(post.content);
@@ -87,47 +54,6 @@ export default function AccountPage() {
       <div className="flex-grow flex flex-col items-center justify-center bg-gradient-to-br from-zomp-600 to-persian_green-500 px-6 py-8">
         <div className="w-full max-w-md bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl text-white space-y-4">
           <h2 className="text-3xl font-extrabold text-center">My Account</h2>
-
-          {/* Current Avatar */}
-          <div className="flex flex-col items-center">
-            {user.profileImg ? (
-              <img
-                src={user.profileImg}
-                alt="avatar"
-                className="w-24 h-24 rounded-full mb-3 object-cover"
-              />
-            ) : (
-              <div className="w-24 h-24 bg-white/20 rounded-full mb-3 flex items-center justify-center">
-                <span className="text-white opacity-70">No Avatar</span>
-              </div>
-            )}
-          </div>
-
-          {/* Avatar Update Form */}
-          <form onSubmit={handleAvatarSubmit} className="space-y-2">
-            <label htmlFor="avatarUrl" className="block text-white font-medium">
-              New Avatar URL
-            </label>
-            <input
-              id="avatarUrl"
-              type="url"
-              placeholder="https://example.com/me.png"
-              value={newAvatarUrl}
-              onChange={(e) => setNewAvatarUrl(e.target.value)}
-              required
-              className="w-full px-3 py-2 bg-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-zomp-300"
-            />
-            {avatarError && (
-              <p className="text-rose_quartz-200 text-sm">{avatarError}</p>
-            )}
-            <button
-              type="submit"
-              disabled={avatarLoading}
-              className="w-full py-2 bg-persian_green-500 hover:bg-persian_green-600 text-white font-semibold rounded-lg transition-colors"
-            >
-              {avatarLoading ? "Uploading…" : "Update Avatar"}
-            </button>
-          </form>
 
           {/* User Info */}
           <p>

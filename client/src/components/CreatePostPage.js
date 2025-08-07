@@ -50,7 +50,7 @@ export default function CreatePostPage() {
     }
   };
 
-  // final form submit: send content+images to GraphQL
+  // final form submit: send contentimages to GraphQL
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -59,7 +59,13 @@ export default function CreatePostPage() {
       setError(true);
     }
   };
-
+  const handleKeyDown = (e) => {
+    // if user presses Enter the post will be submitted
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow flex flex-col items-center justify-center bg-gradient-to-br from-zomp-600 to-persian_green-500 px-6 py-4">
@@ -71,42 +77,10 @@ export default function CreatePostPage() {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="What's on your mind?"
             className="w-full h-32 px-4 py-3 bg-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-zomp-300"
           />
-
-          {/* Image URL and the Upload Button */}
-          <div className="flex space-x-2">
-            <input
-              type="url"
-              placeholder="Paste image URL"
-              value={imageInput}
-              onChange={(e) => setImageInput(e.target.value)}
-              className="flex-grow px-3 py-2 bg-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-zomp-300"
-            />
-            <button
-              type="button"
-              onClick={handleImageUpload}
-              disabled={uploading}
-              className="px-4 py-2 bg-persian_green-500 hover:bg-persian_green-600 text-white rounded-lg"
-            >
-              {uploading ? "Uploading…" : "Add Image"}
-            </button>
-          </div>
-
-          {/* Shows added images */}
-          {images.length > 0 && (
-            <div className="grid grid-cols-3 gap-2">
-              {images.map((url) => (
-                <img
-                  key={url}
-                  src={url}
-                  alt="preview"
-                  className="w-full h-24 object-cover rounded-md"
-                />
-              ))}
-            </div>
-          )}
 
           {/* Error message */}
           {error && (
