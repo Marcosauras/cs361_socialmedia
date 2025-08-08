@@ -5,6 +5,7 @@ const typeDefs = gql`
     _id: ID!
     username: String!
     email: String!
+    role: String!
     profileImg: String
     posts: [Post]
   }
@@ -41,7 +42,7 @@ const typeDefs = gql`
     ): Auth
     deleteUser(username: String!): User
     addPost(content: String!, images: [String]): Post
-    updatePost(postId: ID!, content: String!): Post
+    updatePost(postId: ID!, content: String!, images: [String]): Post
     deletePost(postId: ID!): Post
   }
 `;

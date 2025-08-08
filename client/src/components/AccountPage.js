@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_ME } from "../utils/queries";
-import { UPDATE_POST, DELETE_POST} from "../utils/mutations";
+import { UPDATE_POST, DELETE_POST } from "../utils/mutations";
 import Footer from "./Footer";
 
 export default function AccountPage() {
   const { loading, error, data, refetch } = useQuery(GET_ME);
-
   const [showPosts, setShowPosts] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editContent, setEditContent] = useState("");
@@ -39,31 +38,26 @@ export default function AccountPage() {
     setEditingId(post._id);
     setEditContent(post.content);
   };
+
   const handleSave = async (postId) => {
     await updatePost({ variables: { postId, content: editContent } });
     setEditingId(null);
     refetch();
   };
+
   const handleDelete = (postId) => {
     setDeletingId(postId);
   };
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Profile & Avatar */}
+      {/* Profile Header */}
       <div className="flex-grow flex flex-col items-center justify-center bg-gradient-to-br from-zomp-600 to-persian_green-500 px-6 py-8">
         <div className="w-full max-w-md bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl text-white space-y-4">
           <h2 className="text-3xl font-extrabold text-center">My Account</h2>
+          <p><strong>Username:</strong> {user.username}</p>
+          <p><strong>Email:</strong> {user.email}</p>
 
-          {/* User Info */}
-          <p>
-            <strong>Username:</strong> {user.username}
-          </p>
-          <p>
-            <strong>Email:</strong> {user.email}
-          </p>
-
-          {/* Toggle Posts */}
           <button
             onClick={() => setShowPosts((s) => !s)}
             className="mt-4 w-full py-2 bg-zomp-500 hover:bg-zomp-600 text-white font-semibold rounded-lg transition-transform hover:scale-105"
@@ -72,7 +66,7 @@ export default function AccountPage() {
           </button>
         </div>
 
-        {/* Posts List */}
+        {/* Posts */}
         {showPosts && (
           <div className="w-full max-w-lg mt-8 space-y-6">
             {user.posts.length === 0 ? (
@@ -108,10 +102,40 @@ export default function AccountPage() {
                   ) : (
                     <>
                       <p className="mb-2">{post.content}</p>
-                      <p className="text-sm opacity-80 mb-4">
-                        {post.createdAt}
-                      </p>
-                      <div className="flex justify-end space-x-2">
+                      <p className="text-sm opacity-80 mb-2">{post.createdAt}</p>
+
+                      {/* Show Images with Delete Option */}
+                      {post.images && post.images.length > 0 && (
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                          {post.images.map((id, i) => (
+                            <div key={i} className="relative">
+                              <img
+                                src={id}
+                                alt={`Post ${i}`}
+                                className="rounded-lg max-h-48 object-cover w-full"
+                              />
+                              <button
+                                onClick={async () => {
+                                  const newImages = post.images.filter((img) => img !== id);
+                                  await updatePost({
+                                    variables: {
+                                      postId: post._id,
+                                      content: post.content,
+                                      images: newImages,
+                                    },
+                                  });
+                                  refetch();
+                                }}
+                                className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded px-2 py-1"
+                              >
+                                delete
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex justify-end space-x-2 mt-2">
                         <button
                           onClick={() => handleEdit(post)}
                           className="px-3 py-1 bg-kelly_green-500 hover:bg-kelly_green-600 rounded"
@@ -133,6 +157,8 @@ export default function AccountPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
       {deletingId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
@@ -140,8 +166,7 @@ export default function AccountPage() {
               Confirm Delete
             </h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this post? This action cannot be
-              undone.
+              Are you sure you want to delete this post? This action cannot be undone.
             </p>
             <div className="flex justify-end space-x-3">
               <button
@@ -164,6 +189,7 @@ export default function AccountPage() {
           </div>
         </div>
       )}
+
       <Footer />
     </div>
   );

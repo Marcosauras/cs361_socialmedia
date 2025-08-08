@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function CreatePostPage() {
   const navigate = useNavigate();
-
   // Post fields
   const [content, setContent] = useState("");
   const [images, setImages] = useState([]);
@@ -18,30 +17,40 @@ export default function CreatePostPage() {
     onError: () => setError(true),
   });
 
-  //  call the microservice to process the pasted URL
+  const isValidHttpUrl = (string) => {
+    try {
+      const url = new URL(string);
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch (_) {
+      return false;
+    }
+  };
+
   const handleImageUpload = async () => {
-    if (!imageInput) return;
+    if (!isValidHttpUrl(imageInput)) {
+      setError(true);
+      console.error("Invalid URL format");
+      return;
+    }
+
     setUploading(true);
     setError(false);
 
     try {
-      const token = localStorage.getItem("id_token");
-      const res = await fetch("http://localhost:3002/api/images", {
+      const res = await fetch("http://localhost:8003/api/v1/images", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ imageUrl: imageInput, type: "post" }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: imageInput }),
       });
+
       const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.message || "Image upload failed");
+
+      if (!res.ok || !json.id) {
+        throw new Error("Image upload failed");
       }
 
-      // Append the returned CDN URL
       setImages((imgs) => [...imgs, json.url]);
-      setImageInput(""); // clear input
+      setImageInput("");
     } catch (err) {
       console.error("Error uploading image:", err);
       setError(true);
@@ -49,7 +58,6 @@ export default function CreatePostPage() {
       setUploading(false);
     }
   };
-
   // final form submit: send contentimages to GraphQL
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -88,7 +96,43 @@ export default function CreatePostPage() {
               Something went wrong. Please try again.
             </p>
           )}
+          <div className="flex items-center space-x-2">
+            <input
+              type="text"
+              placeholder="Image URL"
+              value={imageInput}
+              onChange={(e) => setImageInput(e.target.value)}
+              className="flex-grow px-3 py-2 bg-white/20 text-white rounded"
+            />
+            <button
+              onClick={handleImageUpload}
+              disabled={uploading}
+              className="px-3 py-2 bg-kelly_green-500 hover:bg-kelly_green-600 text-white rounded"
+            >
+              {uploading ? "Uploading…" : "Add"}
+            </button>
+          </div>
 
+          {/* Preview uploaded images */}
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            {images.map((id) => (
+              <div key={id} className="relative">
+                <img
+                  src={`${id}`}
+                  alt="Preview"
+                  className="rounded-lg max-h-32 object-cover w-full"
+                />
+                <button
+                  onClick={() =>
+                    setImages((prev) => prev.filter((imgId) => imgId !== id))
+                  }
+                  className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded px-2 py-1"
+                >
+                  delete
+                </button>
+              </div>
+            ))}
+          </div>
           {/* Submit Post */}
           <button
             onClick={handleSubmit}

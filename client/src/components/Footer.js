@@ -5,7 +5,7 @@ export default function Footer() {
         <h2 className="text-2xl font-semibold">Smol Gaming Haven</h2>
         <p className="text-sm opacity-90">
           This is a smol gaming haven for gamers of all types to talk about
-          their favorite games.Create an account and start posting about your
+          their favorite games. Create an account and start posting about your
           favorite games today!
         </p>
       </div>

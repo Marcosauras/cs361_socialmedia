@@ -1,38 +1,44 @@
 import { Link, useNavigate } from "react-router-dom";
 import auth from "../utils/auth";
+import { useQuery } from "@apollo/client";
+import { GET_ME } from "../utils/queries"; // Make sure this returns `role`
 
 export default function Navbar() {
   const navigate = useNavigate();
   const loggedIn = auth.loggedIn();
-  // Handle logout
+
+  // Get user data (including role)
+  const { data } = useQuery(GET_ME, {
+    skip: !loggedIn,
+  });
+
+  const user = data?.me;
+  const isAdmin = user?.role === "admin";
+
   const handleLogout = () => {
     auth.logout();
     navigate("/login", { replace: true });
   };
 
-  // Define your link sets
   const publicLinks = [
     { to: "/login", label: "Log In" },
     { to: "/signup", label: "Sign Up" },
   ];
-  // Define private links that should only be shown when logged in
+
   const privateLinks = [
     { to: "/", label: "Homepage" },
     { to: "/create", label: "New Post" },
     { to: "/help", label: "Help" },
     { to: "/account", label: "My Account" },
   ];
-  // Render the navbar
-  // Use the loggedIn state to determine which links to show
+
   return (
     <nav className="bg-gradient-to-r from-zomp-600 via-persian_green-500 to-kelly_green-500 text-white">
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Brand */}
         <Link to="/" className="text-2xl font-extrabold hover:text-zomp-200">
           Smol Gaming Haven
         </Link>
 
-        {/* Links */}
         <ul className="flex space-x-6 items-center">
           {(loggedIn ? privateLinks : publicLinks).map(({ to, label }) => (
             <li key={to}>
@@ -44,6 +50,18 @@ export default function Navbar() {
               </Link>
             </li>
           ))}
+
+          {/* Show Reports link only for admins */}
+          {loggedIn && isAdmin && (
+            <li>
+              <Link
+                to="/reports"
+                className="text-lg font-medium hover:text-kelly_green-200 transition-colors"
+              >
+                Reports
+              </Link>
+            </li>
+          )}
 
           {loggedIn && (
             <li>

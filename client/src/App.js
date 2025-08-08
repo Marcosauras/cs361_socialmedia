@@ -1,40 +1,26 @@
 import "./App.css";
 import {
-  ApolloProvider,
-  ApolloClient,
-  InMemoryCache,
-  createHttpLink,
+  ApolloProvider, ApolloClient, InMemoryCache, createHttpLink
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 
 import Homepage from "./components/Homepage";
 import LoginForm from "./components/LoginForm";
 import SignupForm from "./components/SignupForm";
 import AccountPage from "./components/AccountPage";
-import Navbar from "./components/Navbar";
 import CreatePostPage from "./components/CreatePostPage";
-import ProtectedRoute from "./components/ProtectedRoute";
 import HelpPage from "./components/HelpPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
+import AppLayout from "./components/AppLayout";
+import ReportsPage from "./components/ReportsPage";
 
-const httpLink = createHttpLink({
-  uri: "http://localhost:3001/graphql",
-});
+const httpLink = createHttpLink({ uri: "http://localhost:3001/graphql" });
 
-// Attach JWT token to every request
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem("id_token");
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : "",
-    },
-  };
+  return { headers: { ...headers, authorization: token ? `Bearer ${token}` : "" } };
 });
 
 const client = new ApolloClient({
@@ -47,49 +33,35 @@ function App() {
     <ApolloProvider client={client}>
       <Router>
         <Routes>
-          {/* Public routes */}
+          {/* Public */}
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
 
-          {/* Protected routes */}
+          {/* Private layout w/ navbar */}
           <Route
-            path="/"
             element={
               <ProtectedRoute>
-                <Navbar />
-                <Homepage />
+                <AppLayout />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/create"
-            element={
-              <ProtectedRoute>
-              <Navbar />
-                <CreatePostPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/account"
-            element={
-              <ProtectedRoute>
-              <Navbar />
-                <AccountPage />
-              </ProtectedRoute>
-            }
-          />
-                    <Route
-            path="/help"
-            element={
-              <ProtectedRoute>
-              <Navbar />
-                <HelpPage />
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route index element={<Homepage />} />
+            <Route path="/create" element={<CreatePostPage />} />
+            <Route path="/account" element={<AccountPage />} />
+            <Route path="/help" element={<HelpPage />} />
 
-          {/* Redirect anything else to home */}
+            {/* Admin-only */}
+            <Route
+              path="/reports"
+              element={
+                <AdminRoute>
+                  <ReportsPage />
+                </AdminRoute>
+              }
+            />
+          </Route>
+
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

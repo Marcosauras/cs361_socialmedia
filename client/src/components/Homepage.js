@@ -1,25 +1,29 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@apollo/client";
-import { GET_POSTS } from "../utils/queries";
+import { GET_POSTS, GET_ME } from "../utils/queries";
 import CollapsibleText from "./CollapsibleText";
+import PostImages from "./PostImages";
 
 export default function Homepage() {
   const { loading, error, data } = useQuery(GET_POSTS);
+  const { data: userData } = useQuery(GET_ME); // ✅ Pulls logged-in user info
+  const username = userData?.me?.username;      // ✅ Extracts reporter username
+
   const [displayPosts, setDisplayPosts] = useState([]);
   const [hasMore, setHasMore] = useState(false);
-
+  const [visibleImages, setVisibleImages] = useState({});
+  const [reportingPost, setReportingPost] = useState(null);
+  const [reportReason, setReportReason] = useState("");
   const observer = useRef(null);
   const sortedRef = useRef([]);
   const BATCH_SIZE = 20;
 
   useEffect(() => {
-    // Sort posts by createdAt descending
     if (data?.posts) {
-      sortedRef.current = [...data.posts].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
-      setDisplayPosts(sortedRef.current.slice(0, BATCH_SIZE));
-      setHasMore(sortedRef.current.length > BATCH_SIZE);
+      const posts = [...data.posts].reverse();
+      sortedRef.current = posts;
+      setDisplayPosts(posts.slice(0, BATCH_SIZE));
+      setHasMore(posts.length > BATCH_SIZE);
     }
   }, [data]);
 
@@ -35,6 +39,7 @@ export default function Homepage() {
       setHasMore(false);
     }
   }, [displayPosts.length]);
+
   const lastPostRef = useCallback(
     (node) => {
       if (loading) return;
@@ -49,8 +54,45 @@ export default function Homepage() {
     [loading, hasMore, loadMorePosts]
   );
 
+  const handleReport = async (post, reason, reporterUsername) => {
+    const payload = {
+      postId: post._id,
+      reason,
+      reporter: reporterUsername,
+      postContent: {
+        author: post.author?.username,
+        content: post.content,
+        createdAt: post.createdAt,
+        images: post.images || [],
+      },
+    };
+
+    console.log("Reporting payload:", payload);
+
+    try {
+      const response = await fetch("http://localhost:3002/report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        alert("Report submitted. Thank you!");
+      } else {
+        alert(`Failed to report: ${result.error}`);
+      }
+    } catch (err) {
+      console.error("Error submitting report:", err);
+      alert("Something went wrong.");
+    }
+  };
+
   if (loading)
     return <p className="text-center text-white mt-12">Loading posts…</p>;
+
   if (error)
     return (
       <div className="p-6">
@@ -60,7 +102,7 @@ export default function Homepage() {
             {
               message: error.message,
               graphQLErrors: error.graphQLErrors,
-              networkError: error.networkError && error.networkError.message,
+              networkError: error.networkError?.message,
             },
             null,
             2
@@ -75,14 +117,68 @@ export default function Homepage() {
         <p className="text-center text-white text-xl mt-12">No posts yet.</p>
       </div>
     );
-  // Render the homepage with posts
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-zomp-600 to-persian_green-500 p-6">
       <div className="max-w-3xl mx-auto space-y-6">
+        {reportingPost && (
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            aria-modal="true"
+            role="dialog"
+          >
+            <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-xl text-black relative z-[10000]">
+              <h2 className="text-xl font-bold mb-2">Report Post</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Why are you reporting this post by{" "}
+                <strong>{reportingPost.author?.username}</strong>?
+              </p>
+              <textarea
+                className="w-full border border-gray-300 rounded p-2 mb-4 resize-none focus:outline-none focus:ring-2 focus:ring-red-400"
+                rows={4}
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                placeholder="Enter reason here..."
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  className="px-4 py-1 text-sm rounded bg-gray-200 hover:bg-gray-300"
+                  onClick={() => {
+                    setReportingPost(null);
+                    setReportReason("");
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-1 text-sm rounded bg-red-500 text-white hover:bg-red-600"
+                  onClick={async () => {
+                    await handleReport(reportingPost, reportReason, username); // ✅ working now
+                    setReportingPost(null);
+                    setReportReason("");
+                  }}
+                >
+                  Submit Report
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <h1 className="text-4xl font-extrabold text-white text-center">Feed</h1>
 
         {displayPosts.map((post, idx) => {
           const isLast = idx === displayPosts.length - 1;
+          const showImages = visibleImages[post._id] || false;
+          const hasImages =
+            Array.isArray(post.images) && post.images.length > 0;
+
+          const toggleImages = () =>
+            setVisibleImages((prev) => ({
+              ...prev,
+              [post._id]: !prev[post._id],
+            }));
+
           return (
             <div
               ref={isLast ? lastPostRef : null}
@@ -91,21 +187,32 @@ export default function Homepage() {
             >
               <div className="flex justify-between items-center mb-2">
                 <span className="font-semibold">{post.author.username}</span>
-                <span className="text-sm opacity-80">{post.createdAt}</span>
+                <span className="text-sm opacity-80">
+                  {new Date(post.createdAt).toLocaleString()}
+                </span>
               </div>
+
               <CollapsibleText text={post.content} wordLimit={200} />
-              {post.images?.length > 0 && (
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  {post.images.map((url) => (
-                    <img
-                      key={url}
-                      src={url}
-                      alt="attachment"
-                      className="object-cover rounded"
-                    />
-                  ))}
-                </div>
+
+              <div className="flex justify-end mt-2">
+                <button
+                  className="text-sm text-gray-400 bg-red-200 p-2 rounded-lg hover:text-red-500 transition-colors"
+                  onClick={() => setReportingPost(post)}
+                >
+                  Report
+                </button>
+              </div>
+
+              {hasImages && (
+                <button
+                  onClick={toggleImages}
+                  className="mt-2 mb-3 px-3 py-1 text-sm bg-white/20 rounded hover:bg-white/30 transition"
+                >
+                  {showImages ? "Hide Images" : "Show Images"}
+                </button>
               )}
+
+              {showImages && <PostImages imageIds={post.images} />}
             </div>
           );
         })}

@@ -9,6 +9,7 @@ export const LOGIN_USER = gql`
       token
       user {
         _id
+        role
       }
     }
   }
@@ -20,6 +21,7 @@ export const ADD_USER = gql`
       token
       user {
         _id
+        role
       }
     }
   }
@@ -45,6 +47,7 @@ export const UPDATE_USER = gql`
         username
         email
         profileImg
+        role
       }
     }
   }
@@ -75,8 +78,8 @@ export const ADD_POST = gql`
 
 // This mutation updates a post by its ID and returns the updated post
 export const UPDATE_POST = gql`
-  mutation updatePost($postId: ID!, $content: String!) {
-    updatePost(postId: $postId, content: $content) {
+  mutation updatePost($postId: ID!, $content: String!, $images: [String!]) {
+    updatePost(postId: $postId, content: $content, images: $images) {
       _id
       content
       images

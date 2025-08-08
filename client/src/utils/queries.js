@@ -8,6 +8,7 @@ export const GET_ME = gql`
       _id
       username
       email
+      role
       profileImg
       posts {
         _id

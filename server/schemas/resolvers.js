@@ -9,7 +9,7 @@ const resolvers = {
     users: async () => await User.find().populate("posts"),
     user: async (parent, { _id }) => await User.findById(_id).populate("posts"),
     // Fetch the currently logged-in user
-     me: async (parent, args, context) => {
+    me: async (parent, args, context) => {
       if (!context.user) {
         throw new AuthenticationError("Not logged in");
       }
@@ -17,7 +17,10 @@ const resolvers = {
         .select("-__v -password")
         .populate({
           path: "posts",
-          populate: { path: "author", select: "username email img" }
+          populate: {
+            path: "author",
+            select: "username email profileImg role",
+          },
         });
     },
 
@@ -34,21 +37,33 @@ const resolvers = {
       if (user) {
         username = `${username}${Math.floor(Math.random() * 1000)}`;
       }
-      user = await User.create({ username, email, password });
-      const token = signToken(user);
+      // Default new users to "user" role
+      user = await User.create({ username, email, password, role: "user" });
+
+      const token = signToken({
+        _id: user._id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+      });
+
       return { token, user };
     },
     // Update user information and return a token
     login: async (parent, { email, password }) => {
       const user = await User.findOne({ email }).populate("posts");
-      if (!user) {
-        throw new AuthenticationError("Incorrect credentials");
-      }
+      if (!user) throw new AuthenticationError("Incorrect credentials");
+
       const valid = await user.checkPassword(password);
-      if (!valid) {
-        throw new AuthenticationError("Incorrect credentials");
-      }
-      const token = signToken(user);
+      if (!valid) throw new AuthenticationError("Incorrect credentials");
+
+      const token = signToken({
+        _id: user._id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+      });
+
       return { token, user };
     },
     // Update user information
@@ -100,18 +115,28 @@ const resolvers = {
 
       return { token, user: updatedUser };
     },
-    updatePost: async (parent, { postId, content }, context) => {
+
+    updatePost: async (parent, { postId, content, images }, context) => {
       if (!context.user) {
         throw new AuthenticationError("You must be logged in to update a post");
       }
-      const updated = await Post.findByIdAndUpdate(
-        postId,
-        { content },
-        { new: true }
-      ).populate("author");
+
+      const post = await Post.findById(postId);
+      if (!post) throw new UserInputError("Post not found");
+      const isOwner = String(post.author) === String(context.user._id);
+      const isAdmin = context.user.role === "admin";
+      if (!isOwner && !isAdmin) throw new AuthenticationError("Not authorized");
+
+      const updateData = { content };
+      if (images) updateData.images = images;
+      const updated = await Post.findByIdAndUpdate(postId, updateData, {
+        new: true,
+      }).populate("author");
+
       if (!updated) {
         throw new UserInputError("Post not found");
       }
+
       return updated;
     },
 
@@ -119,15 +144,15 @@ const resolvers = {
       if (!context.user) {
         throw new AuthenticationError("You must be logged in to delete a post");
       }
+      const post = await Post.findById(postId);
+      if (!post) throw new UserInputError("Post not found");
+      const isOwner = String(post.author) === String(context.user._id);
+      const isAdmin = context.user.role === "admin";
+      if (!isOwner && !isAdmin) throw new AuthenticationError("Not authorized");
+
       const deleted = await Post.findByIdAndDelete(postId);
-      if (!deleted) {
-        throw new UserInputError("Post not found");
-      }
-      await User.findByIdAndUpdate(
-        context.user._id,
-        { $pull: { posts: postId } },
-        { new: true }
-      );
+      // remove from the *post author's* posts array
+      await User.findByIdAndUpdate(post.author, { $pull: { posts: postId } });
       return deleted;
     },
   },
