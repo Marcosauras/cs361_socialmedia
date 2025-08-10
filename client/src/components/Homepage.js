@@ -3,12 +3,15 @@ import { useQuery } from "@apollo/client";
 import { GET_POSTS, GET_ME } from "../utils/queries";
 import CollapsibleText from "./CollapsibleText";
 import PostImages from "./PostImages";
+import SearchBar from "./SearchBar";
+import Avatar from "./Avatar";
+import { useNavigate } from "react-router-dom";
 
 export default function Homepage() {
   const { loading, error, data } = useQuery(GET_POSTS);
-  const { data: userData } = useQuery(GET_ME); // ✅ Pulls logged-in user info
-  const username = userData?.me?.username;      // ✅ Extracts reporter username
-
+  const { data: userData } = useQuery(GET_ME);
+  const username = userData?.me?.username;
+  const navigate = useNavigate();
   const [displayPosts, setDisplayPosts] = useState([]);
   const [hasMore, setHasMore] = useState(false);
   const [visibleImages, setVisibleImages] = useState({});
@@ -67,8 +70,6 @@ export default function Homepage() {
       },
     };
 
-    console.log("Reporting payload:", payload);
-
     try {
       const response = await fetch("http://localhost:3002/report", {
         method: "POST",
@@ -88,6 +89,9 @@ export default function Homepage() {
       console.error("Error submitting report:", err);
       alert("Something went wrong.");
     }
+  };
+  const handleSearchFromHome = (query) => {
+    navigate(`/search?type=posts&q=${encodeURIComponent(query)}`);
   };
 
   if (loading)
@@ -121,6 +125,10 @@ export default function Homepage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-zomp-600 to-persian_green-500 p-6">
       <div className="max-w-3xl mx-auto space-y-6">
+        <SearchBar
+          onSearch={handleSearchFromHome}
+          placeholder="Search posts..."
+        />
         {reportingPost && (
           <div
             className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
@@ -153,7 +161,7 @@ export default function Homepage() {
                 <button
                   className="px-4 py-1 text-sm rounded bg-red-500 text-white hover:bg-red-600"
                   onClick={async () => {
-                    await handleReport(reportingPost, reportReason, username); // ✅ working now
+                    await handleReport(reportingPost, reportReason, username);
                     setReportingPost(null);
                     setReportReason("");
                   }}
@@ -173,6 +181,7 @@ export default function Homepage() {
           const hasImages =
             Array.isArray(post.images) && post.images.length > 0;
 
+          const author = post.author || {};
           const toggleImages = () =>
             setVisibleImages((prev) => ({
               ...prev,
@@ -185,34 +194,45 @@ export default function Homepage() {
               key={post._id}
               className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl text-white relative"
             >
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-semibold">{post.author.username}</span>
-                <span className="text-sm opacity-80">
-                  {new Date(post.createdAt).toLocaleString()}
-                </span>
-              </div>
+              {/* Header */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <Avatar
+                    src={author.profileImg}
+                    name={author.username}
+                    size={40}
+                  />
+                  <div className="leading-tight">
+                    <div className="font-semibold">{author.username}</div>
+                    <div className="text-xs opacity-80">
+                      {post.createdAt || ""}
+                    </div>
+                  </div>
+                </div>
 
-              <CollapsibleText text={post.content} wordLimit={200} />
-
-              <div className="flex justify-end mt-2">
                 <button
-                  className="text-sm text-gray-400 bg-red-200 p-2 rounded-lg hover:text-red-500 transition-colors"
+                  className="text-sm text-gray-300 hover:text-red-400 transition-colors"
                   onClick={() => setReportingPost(post)}
+                  aria-label="Report post"
+                  title="Report post"
                 >
                   Report
                 </button>
               </div>
 
-              {hasImages && (
-                <button
-                  onClick={toggleImages}
-                  className="mt-2 mb-3 px-3 py-1 text-sm bg-white/20 rounded hover:bg-white/30 transition"
-                >
-                  {showImages ? "Hide Images" : "Show Images"}
-                </button>
-              )}
+              <CollapsibleText text={post.content} wordLimit={200} />
 
-              {showImages && <PostImages imageIds={post.images} />}
+              {hasImages && (
+                <>
+                  <button
+                    onClick={toggleImages}
+                    className="mt-2 mb-3 px-3 py-1 text-sm bg-white/20 rounded hover:bg-white/30 transition"
+                  >
+                    {showImages ? "Hide Images" : "Show Images"}
+                  </button>
+                  {showImages && <PostImages imageIds={post.images} />}
+                </>
+              )}
             </div>
           );
         })}

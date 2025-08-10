@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_ME } from "../utils/queries";
-import { UPDATE_POST, DELETE_POST } from "../utils/mutations";
+import { UPDATE_POST, DELETE_POST, UPDATE_USER } from "../utils/mutations";
 import Footer from "./Footer";
 
 export default function AccountPage() {
@@ -12,6 +12,10 @@ export default function AccountPage() {
   const [updatePost] = useMutation(UPDATE_POST);
   const [deletePost] = useMutation(DELETE_POST);
   const [deletingId, setDeletingId] = useState(null);
+  const [updateUser] = useMutation(UPDATE_USER);
+  const [newAvatarUrl, setNewAvatarUrl] = useState("");
+  const [avatarError, setAvatarError] = useState("");
+  const [avatarLoading, setAvatarLoading] = useState(false);
 
   if (loading) return <p className="text-center text-white">Loading…</p>;
   if (error)
@@ -49,14 +53,79 @@ export default function AccountPage() {
     setDeletingId(postId);
   };
 
+  const handleAvatarUpdate = async () => {
+    if (!newAvatarUrl) {
+      setAvatarError("Please paste an image URL.");
+      return;
+    }
+    setAvatarLoading(true);
+    setAvatarError("");
+
+    try {
+      // Send the pasted URL to the image microservice
+      const res = await fetch("http://localhost:8003/api/v1/images", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: newAvatarUrl }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json?.url) throw new Error("Image service error");
+
+      // 2) Update ONLY profileImg via GraphQL
+      await updateUser({ variables: { profileImg: json.url } });
+
+      // 3) Refresh UI
+      setNewAvatarUrl("");
+      await refetch();
+    } catch (err) {
+      console.error("Failed to update profile image:", err);
+      setAvatarError("Failed to update profile image.");
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
   return (
     <div className="flex flex-col min-h-screen">
       {/* Profile Header */}
       <div className="flex-grow flex flex-col items-center justify-center bg-gradient-to-br from-zomp-600 to-persian_green-500 px-6 py-8">
         <div className="w-full max-w-md bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl text-white space-y-4">
           <h2 className="text-3xl font-extrabold text-center">My Account</h2>
-          <p><strong>Username:</strong> {user.username}</p>
-          <p><strong>Email:</strong> {user.email}</p>
+
+          {/* Profile Image */}
+          {user.profileImg && (
+            <img
+              src={user.profileImg}
+              alt="Profile"
+              className="w-24 h-24 rounded-full mx-auto object-cover border-2 border-white"
+            />
+          )}
+
+          <div className="flex gap-2 mt-3">
+            <input
+              type="text"
+              placeholder="New avatar URL"
+              value={newAvatarUrl}
+              onChange={(e) => setNewAvatarUrl(e.target.value)}
+              className="flex-1 p-2 rounded bg-white/20 text-white"
+            />
+            <button
+              onClick={handleAvatarUpdate}
+              disabled={avatarLoading}
+              className="px-3 py-1 bg-kelly_green-500 hover:bg-kelly_green-600 rounded"
+            >
+              {avatarLoading ? "Saving..." : "Update"}
+            </button>
+          </div>
+
+          {avatarError && <p className="text-red-400">{avatarError}</p>}
+
+          {/* User Info */}
+          <p>
+            <strong>Username:</strong> {user.username}
+          </p>
+          <p>
+            <strong>Email:</strong> {user.email}
+          </p>
 
           <button
             onClick={() => setShowPosts((s) => !s)}
@@ -65,7 +134,6 @@ export default function AccountPage() {
             {showPosts ? "Hide My Posts" : "View My Posts"}
           </button>
         </div>
-
         {/* Posts */}
         {showPosts && (
           <div className="w-full max-w-lg mt-8 space-y-6">
@@ -102,7 +170,9 @@ export default function AccountPage() {
                   ) : (
                     <>
                       <p className="mb-2">{post.content}</p>
-                      <p className="text-sm opacity-80 mb-2">{post.createdAt}</p>
+                      <p className="text-sm opacity-80 mb-2">
+                        {post.createdAt}
+                      </p>
 
                       {/* Show Images with Delete Option */}
                       {post.images && post.images.length > 0 && (
@@ -116,7 +186,9 @@ export default function AccountPage() {
                               />
                               <button
                                 onClick={async () => {
-                                  const newImages = post.images.filter((img) => img !== id);
+                                  const newImages = post.images.filter(
+                                    (img) => img !== id
+                                  );
                                   await updatePost({
                                     variables: {
                                       postId: post._id,
@@ -166,7 +238,8 @@ export default function AccountPage() {
               Confirm Delete
             </h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this post? This action cannot be undone.
+              Are you sure you want to delete this post? This action cannot be
+              undone.
             </p>
             <div className="flex justify-end space-x-3">
               <button

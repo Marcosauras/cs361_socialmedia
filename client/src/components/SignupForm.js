@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { ADD_USER } from "../utils/mutations";
 import Auth from "../utils/auth";
@@ -20,16 +20,17 @@ export default function SignupForm() {
     setFormState({ ...formState, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const { data } = await addUser({ variables: formState });
-      Auth.login(data.addUser.token);
-      navigate("/", { replace: true });
-    } catch {
-      setError(true);
-    }
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError(false);
+  try {
+    const { data } = await addUser({ variables: formState });
+    Auth.login(data.addUser.token);
+    navigate("/", { replace: true });
+  } catch (err) {
+    console.error("Signup error:", JSON.stringify(err, null, 2));
+  }
+};
 
   return (
     <div className="flex flex-col min-h-screen">
