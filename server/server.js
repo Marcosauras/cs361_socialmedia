@@ -38,10 +38,17 @@ async function startApollo() {
     app.listen(PORT, () => {
       console.log(`API server running on port ${PORT}!`);
       console.log(
-        `GraphQL available at http://localhost:${PORT}${server.graphqlPath}`
+        `GraphQL available path: ${server.graphqlPath}`
       );
     });
   });
+    db.on("error", (err) => {
+    console.error("MongoDB connection error:", err);
+  });
 }
+
+startApollo().catch((err) => {
+  console.error("Server startup error:", err);
+});
 
 startApollo();
