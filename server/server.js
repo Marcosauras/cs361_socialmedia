@@ -47,8 +47,4 @@ async function startApollo() {
   });
 }
 
-startApollo().catch((err) => {
-  console.error("Server startup error:", err);
-});
-
 startApollo();
