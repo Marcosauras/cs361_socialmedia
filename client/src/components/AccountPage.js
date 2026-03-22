@@ -60,21 +60,28 @@ export default function AccountPage() {
     }
     setAvatarLoading(true);
     setAvatarError("");
-
     try {
-      // Send the pasted URL to the image microservice
+      console.log("[Avatar Upload] Sending request to image microservice:", {
+        url: newAvatarUrl,
+      });
+
       const res = await fetch("http://localhost:8003/api/v1/images", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: newAvatarUrl }),
       });
+
       const json = await res.json();
+      console.log("[Avatar Upload] Received response:", json);
+
       if (!res.ok || !json?.url) throw new Error("Image service error");
 
-      // 2) Update ONLY profileImg via GraphQL
+      console.log("[Avatar Upload] Sending GraphQL update:", {
+        profileImg: json.url,
+      });
       await updateUser({ variables: { profileImg: json.url } });
 
-      // 3) Refresh UI
+      // Refresh UI
       setNewAvatarUrl("");
       await refetch();
     } catch (err) {

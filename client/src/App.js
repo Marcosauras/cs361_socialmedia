@@ -16,6 +16,7 @@ import AdminRoute from "./components/AdminRoute";
 import AppLayout from "./components/AppLayout";
 import ReportsPage from "./components/ReportsPage";
 import SearchPage from "./components/SearchPage";
+import PostDetailPage from "./components/PostDetailPage";
 
 const httpLink = createHttpLink({ uri: "http://localhost:3001/graphql" });
 
@@ -51,6 +52,7 @@ function App() {
             <Route path="/account" element={<AccountPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/p/:postId" element={<PostDetailPage />} />
 
             {/* Admin-only */}
             <Route

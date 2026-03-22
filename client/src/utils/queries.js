@@ -59,3 +59,19 @@ export const GET_POSTS = gql`
     }
   }
 `;
+
+export const GET_POST = gql`
+  query Post($postId: ID!) {
+    post(postId: $postId) {
+      _id
+      content
+      images
+      createdAt
+      author {
+        _id
+        username
+        profileImg
+      }
+    }
+  }
+`;

@@ -16,7 +16,6 @@ export default function Avatar({ src, name, size = 40, className = "" }) {
       style={style}
       className={`rounded-full object-cover border border-white/20 ${className}`}
       onError={(e) => {
-        // if the image fails, swap to initials fallback
         e.currentTarget.onerror = null;
         e.currentTarget.src = "";
         e.currentTarget.style.display = "none";

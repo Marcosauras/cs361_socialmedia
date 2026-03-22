@@ -5,7 +5,7 @@ import CollapsibleText from "./CollapsibleText";
 import PostImages from "./PostImages";
 import SearchBar from "./SearchBar";
 import Avatar from "./Avatar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Homepage() {
   const { loading, error, data } = useQuery(GET_POSTS);
@@ -71,6 +71,8 @@ export default function Homepage() {
     };
 
     try {
+      console.log("[Report] Sending request payload:", payload);
+
       const response = await fetch("http://localhost:3002/report", {
         method: "POST",
         headers: {
@@ -80,6 +82,8 @@ export default function Homepage() {
       });
 
       const result = await response.json();
+      console.log("[Report] Received response:", result);
+
       if (response.ok) {
         alert("Report submitted. Thank you!");
       } else {
@@ -197,11 +201,18 @@ export default function Homepage() {
               {/* Header */}
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
-                  <Avatar
-                    src={author.profileImg}
-                    name={author.username}
-                    size={40}
-                  />
+                  <Link
+                    to={`/p/${post._id}`}
+                    className="avatar-link"
+                    title="Open post"
+                  >
+                    <Avatar
+                      src={author.profileImg}
+                      name={author.username}
+                      size={40}
+                    />
+                  </Link>
+
                   <div className="leading-tight">
                     <div className="font-semibold">{author.username}</div>
                     <div className="text-xs opacity-80">

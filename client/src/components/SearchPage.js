@@ -1,8 +1,11 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import SearchBar from "./SearchBar";
+import { Link } from "react-router-dom";
+import Avatar from "./Avatar";
 
-const SEARCH_BASE = process.env.REACT_APP_SEARCH_SERVICE || "http://localhost:4005";
+const SEARCH_BASE =
+  process.env.REACT_APP_SEARCH_SERVICE || "http://localhost:4005";
 
 export default function SearchPage({ currentUserId }) {
   const [params, setParams] = useSearchParams();
@@ -17,69 +20,96 @@ export default function SearchPage({ currentUserId }) {
   const [postResults, setPostResults] = useState([]);
   const [userResults, setUserResults] = useState([]);
 
-  const headers = useMemo(() => ({ "x-user-id": currentUserId || "anon" }), [currentUserId]);
+  const headers = useMemo(
+    () => ({ "x-user-id": currentUserId || "anon" }),
+    [currentUserId]
+  );
 
-  const runSearch = useCallback(async (query, searchType, byMode = "content") => {
-  const value = (query || "").trim();
-  if (!value) { setPostResults([]); setUserResults([]); return; }
-
-  setLoading(true);
-  setErr(null);
-  try {
-    if (searchType === "users") {
-      const url = new URL(`${SEARCH_BASE}/search/users`);
-      url.searchParams.set("q", value);
-      url.searchParams.set("limit", "50");
-      const res = await fetch(url, { headers, credentials: "include" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setUserResults(data.results || []);
-      setPostResults([]);
-    } else {
-      // POSTS
-      if (byMode === "author") {
-        // <-- use the dedicated endpoint
-        const res = await fetch(`${SEARCH_BASE}/search/users/${encodeURIComponent(value)}/posts?limit=50`, {
-          headers, credentials: "include"
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        setPostResults(data.results || []);
+  const runSearch = useCallback(
+    async (query, searchType, byMode = "content") => {
+      const value = (query || "").trim();
+      if (!value) {
+        setPostResults([]);
         setUserResults([]);
-      } else {
-        // default: search in content
-        const url = new URL(`${SEARCH_BASE}/search/posts`);
-        url.searchParams.set("q", value);
-        url.searchParams.set("limit", "50");
-        const res = await fetch(url, { headers, credentials: "include" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        setPostResults(data.results || []);
-        setUserResults([]);
+        return;
       }
-    }
-  } catch (e) {
-    setErr(e.message);
-    setPostResults([]); setUserResults([]);
-  } finally {
-    setLoading(false);
-  }
-}, [headers]);
 
-  useEffect(() => { if (q) runSearch(q, type, by); }, [q, type, by, runSearch]);
+      setLoading(true);
+      setErr(null);
+      try {
+        if (searchType === "users") {
+          const url = new URL(`${SEARCH_BASE}/search/users`);
+          url.searchParams.set("q", value);
+          const res = await fetch(url, { headers, credentials: "include" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          setUserResults(data.results || []);
+          setPostResults([]);
+        } else {
+          if (byMode === "author") {
+            console.log("[Search by Author] Fetching posts for:", value);
+
+            const res = await fetch(
+              `${SEARCH_BASE}/search/users/${encodeURIComponent(
+                value
+              )}/posts?limit=50`,
+              {
+                headers,
+                credentials: "include",
+              }
+            );
+
+            const data = await res.json();
+            console.log("[Search by Author] Received response:", data);
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            setPostResults(data.results || []);
+            setUserResults([]);
+          } else {
+            console.log(
+              "[Search by Content] Searching posts with query:",
+              value
+            );
+
+            const url = new URL(`${SEARCH_BASE}/search/posts`);
+            url.searchParams.set("q", value);
+            url.searchParams.set("limit", "50");
+
+            const res = await fetch(url, { headers, credentials: "include" });
+            const data = await res.json();
+            console.log("[Search by Content] Received response:", data);
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            setPostResults(data.results || []);
+            setUserResults([]);
+          }
+        }
+      } catch (e) {
+        setErr(e.message);
+        setPostResults([]);
+        setUserResults([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [headers]
+  );
+
+  useEffect(() => {
+    if (q) runSearch(q, type, by);
+  }, [q, type, by, runSearch]);
 
   const handleSearchOnPage = (query) => {
     setParams({ q: query, type });
   };
 
-  // toggle between posts and users
   const setType = (next) => {
     setParams({ q, type: next });
   };
 
-const showUserPosts = (username) => {
-  setParams({ q: username, type: "posts", by: "author" }); // NEW
-};
+  const showUserPosts = (username) => {
+    setParams({ q: username, type: "posts", by: "author" });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zomp-600 to-persian_green-500 p-6">
@@ -95,13 +125,17 @@ const showUserPosts = (username) => {
         <div className="flex gap-2 text-white">
           <button
             onClick={() => setType("posts")}
-            className={`px-3 py-1 rounded ${type === "posts" ? "bg-white/30" : "bg-white/10 hover:bg-white/20"}`}
+            className={`px-3 py-1 rounded ${
+              type === "posts" ? "bg-white/30" : "bg-white/10 hover:bg-white/20"
+            }`}
           >
             Posts
           </button>
           <button
             onClick={() => setType("users")}
-            className={`px-3 py-1 rounded ${type === "users" ? "bg-white/30" : "bg-white/10 hover:bg-white/20"}`}
+            className={`px-3 py-1 rounded ${
+              type === "users" ? "bg-white/30" : "bg-white/10 hover:bg-white/20"
+            }`}
           >
             Users
           </button>
@@ -110,35 +144,66 @@ const showUserPosts = (username) => {
         {loading && <div className="text-white">Searching…</div>}
         {err && <div className="text-red-300">Error: {err}</div>}
 
-        {!loading && !err && q && type === "posts" && postResults.length === 0 && (
-          <div className="text-white">No posts found for “{q}”.</div>
-        )}
-        {!loading && !err && q && type === "users" && userResults.length === 0 && (
-          <div className="text-white">No users found for “{q}”.</div>
-        )}
+        {!loading &&
+          !err &&
+          q &&
+          type === "posts" &&
+          postResults.length === 0 && (
+            <div className="text-white">No posts found for “{q}”.</div>
+          )}
+        {!loading &&
+          !err &&
+          q &&
+          type === "users" &&
+          userResults.length === 0 && (
+            <div className="text-white">No users found for “{q}”.</div>
+          )}
 
         {/* Results */}
         {type === "posts" ? (
           <ul className="space-y-3">
             {postResults.map((p) => (
-              <li key={p.id} className="bg-white/10 backdrop-blur-md p-4 rounded-xl text-white">
-                <div className="flex justify-between">
-                  <strong>{p.author?.username || "Unknown"}</strong>
-                  <span className="text-sm opacity-80">{new Date(p.createdAt).toLocaleString()}</span>
+              <li
+                key={p.id}
+                className="bg-white/10 backdrop-blur-md p-4 rounded-xl text-white"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <Link to={`/p/${p.id}`}>
+                      <Avatar
+                        src={p.author?.profileImg}
+                        name={p.author?.username}
+                        size={36}
+                      />
+                    </Link>
+
+                    <strong>{p.author?.username || "Unknown"}</strong>
+                  </div>
+                  <span className="text-sm opacity-80">
+                    {new Date(p.createdAt).toLocaleString()}
+                  </span>
                 </div>
-                <div>{p.content}</div>
+
+                <div className="mt-2">{p.content}</div>
+
+                <Link
+                  to={`/p/${p.id}`}
+                  className="inline-block mt-3 text-sm bg-white/20 px-3 py-1 rounded 
+                hover:bg-white/30"
+                >
+                  View Post
+                </Link>
               </li>
             ))}
           </ul>
         ) : (
           <ul className="space-y-3">
             {userResults.map((u) => (
-              <li key={u.id} className="bg-white/10 backdrop-blur-md p-4 rounded-xl text-white flex items-center gap-3">
-                <img
-                  src={u.img || "/placeholder-avatar.png"}
-                  alt={u.username}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
+              <li
+                key={u.id}
+                className="bg-white/10 backdrop-blur-md p-4 rounded-xl text-white flex items-center gap-3"
+              >
+                <Avatar src={u.img} name={u.username} size={40} />
                 <div className="flex-1">
                   <div className="font-semibold">{u.username}</div>
                 </div>
